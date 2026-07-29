@@ -6,6 +6,7 @@ celery_app = Celery(
     "deribit",
     broker="sqla+postgresql://deribit:deribit@db:5432/deribit",
     backend="db+postgresql://deribit:deribit@db:5432/deribit",
+    include=["app.tasks.fetch_prices"],
 )
 
 celery_app.conf.update(

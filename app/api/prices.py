@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_async_session
+from app.limiter import limiter
 from app.models import PriceRecord
 from app.schemas import PriceLastResponse, PriceResponse
 
@@ -10,7 +11,9 @@ router = APIRouter(prefix="/api/v1/prices", tags=["prices"])
 
 
 @router.get("", response_model=list[PriceResponse])
+@limiter.limit("30/minute")
 async def get_prices(
+    request: Request,
     ticker: str = Query(..., description="Currency ticker, e.g. btc_usd"),
     date_from: int | None = Query(None, description="Start UNIX timestamp"),
     date_to: int | None = Query(None, description="End UNIX timestamp"),
@@ -33,7 +36,9 @@ async def get_prices(
 
 
 @router.get("/last", response_model=PriceLastResponse)
+@limiter.limit("30/minute")
 async def get_last_price(
+    request: Request,
     ticker: str = Query(..., description="Currency ticker, e.g. btc_usd"),
     session: AsyncSession = Depends(get_async_session),
 ) -> PriceRecord:

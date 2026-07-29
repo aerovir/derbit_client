@@ -1,9 +1,18 @@
 #!/bin/bash
 set -e
 
-# Wait for PostgreSQL
+# Wait for PostgreSQL using Python (pg_isready not available in slim image)
 echo "Waiting for PostgreSQL..."
-while ! pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" > /dev/null 2>&1; do
+until python3 -c "
+import psycopg2
+psycopg2.connect(
+    host='${DB_HOST:-db}',
+    port='${DB_PORT:-5432}',
+    user='${DB_USER:-deribit}',
+    password='${DB_PASSWORD:-deribit}',
+    dbname='${DB_NAME:-deribit}'
+)
+" 2>/dev/null; do
     sleep 1
 done
 echo "PostgreSQL is ready."
