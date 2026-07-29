@@ -23,13 +23,18 @@ async def get_prices(
     ),
     date_from: int | None = Query(None, description="Start UNIX timestamp"),
     date_to: int | None = Query(None, description="End UNIX timestamp"),
+    skip: int = Query(0, ge=0, description="Number of records to skip"),
+    limit: int = Query(100, ge=1, description="Max records to return (capped at 1000)"),
     session: AsyncSession = Depends(get_async_session),
 ) -> list[PriceRecord]:
     """Get all price records for a ticker, optionally filtered by date range."""
+    effective_limit = min(limit, 1000)
     query = (
         select(PriceRecord)
         .where(PriceRecord.ticker == ticker)
         .order_by(PriceRecord.timestamp)
+        .offset(skip)
+        .limit(effective_limit)
     )
 
     if date_from is not None:
