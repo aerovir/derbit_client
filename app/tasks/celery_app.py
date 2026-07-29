@@ -13,6 +13,7 @@ celery_app.conf.update(
     task_serializer="json",
     accept_content=["json"],
     result_serializer="json",
+    result_expires=3600,  # удалять результаты задач через 1 час
     timezone="UTC",
     enable_utc=True,
     beat_schedule={
