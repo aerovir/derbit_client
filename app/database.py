@@ -1,3 +1,5 @@
+from collections.abc import AsyncGenerator
+
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.config import settings
@@ -13,7 +15,7 @@ async def init_db() -> None:
         await conn.run_sync(Base.metadata.create_all)
 
 
-async def get_async_session() -> AsyncSession:  # type: ignore[misc]
+async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     """FastAPI dependency providing an async database session."""
     async with async_session_factory() as session:
         try:
