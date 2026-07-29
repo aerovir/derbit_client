@@ -27,6 +27,12 @@ services:
       DB_USER: deribit
       DB_PASSWORD: deribit
       DB_NAME: deribit
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; resp = urllib.request.urlopen('http://localhost:8000/health', timeout=5); assert resp.status == 200"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     depends_on:
       db:
         condition: service_healthy
