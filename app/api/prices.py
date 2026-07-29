@@ -7,6 +7,8 @@ from app.limiter import limiter
 from app.models import PriceRecord
 from app.schemas import PriceLastResponse, PriceResponse
 
+TICKER_PATTERN = r"^[a-z0-9]{2,20}_[a-z0-9]{2,10}$"
+
 router = APIRouter(prefix="/api/v1/prices", tags=["prices"])
 
 
@@ -14,7 +16,11 @@ router = APIRouter(prefix="/api/v1/prices", tags=["prices"])
 @limiter.limit("30/minute")
 async def get_prices(
     request: Request,
-    ticker: str = Query(..., description="Currency ticker, e.g. btc_usd"),
+    ticker: str = Query(
+        ...,
+        pattern=TICKER_PATTERN,
+        description="Currency ticker, e.g. btc_usd",
+    ),
     date_from: int | None = Query(None, description="Start UNIX timestamp"),
     date_to: int | None = Query(None, description="End UNIX timestamp"),
     session: AsyncSession = Depends(get_async_session),
@@ -39,7 +45,11 @@ async def get_prices(
 @limiter.limit("30/minute")
 async def get_last_price(
     request: Request,
-    ticker: str = Query(..., description="Currency ticker, e.g. btc_usd"),
+    ticker: str = Query(
+        ...,
+        pattern=TICKER_PATTERN,
+        description="Currency ticker, e.g. btc_usd",
+    ),
     session: AsyncSession = Depends(get_async_session),
 ) -> PriceRecord:
     """Get the most recent price record for a ticker."""
