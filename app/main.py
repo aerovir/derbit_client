@@ -10,6 +10,9 @@ from app.api.health import router as health_router
 from app.api.prices import router as prices_router
 from app.database import init_db
 from app.limiter import limiter
+from app.logging_config import RequestIDMiddleware, setup_logging
+
+setup_logging()
 
 
 @asynccontextmanager
@@ -20,6 +23,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Deribit Price API", version="1.0.0", lifespan=lifespan)
+
+# Request ID — first middleware to catch everything
+app.add_middleware(RequestIDMiddleware)
 
 # Rate limiting
 app.state.limiter = limiter
