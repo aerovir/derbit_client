@@ -16,8 +16,9 @@ class DeribitClient:
     через публичный эндпоинт get_index_price (без аутентификации).
     """
 
-    def __init__(self, base_url: str) -> None:
+    def __init__(self, base_url: str, timeout: float = 10) -> None:
         self._base_url = base_url.rstrip("/")
+        self._timeout = timeout
 
     async def get_index_price(self, index_name: str) -> float:
         """Получить текущий index price для указанной валютной пары.
@@ -31,10 +32,12 @@ class DeribitClient:
         Raises:
             DeribitAPIError: Если API вернул ошибку или некорректный ответ.
             aiohttp.ClientError: При сетевых проблемах.
+            asyncio.TimeoutError: При превышении таймаута.
         """
         url = f"{self._base_url}/public/get_index_price"
+        timeout_obj = aiohttp.ClientTimeout(total=self._timeout)
 
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(timeout=timeout_obj) as session:
             async with session.get(url, params={"index_name": index_name}) as response:
                 response.raise_for_status()
                 data = await response.json()
