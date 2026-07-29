@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: deribit
+      POSTGRES_USER: deribit
+      POSTGRES_PASSWORD: deribit
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U deribit"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DERIBIT_DATABASE_URL: "postgresql+asyncpg://deribit:deribit@db:5432/deribit"
+      DERIBIT_DATABASE_URL_SYNC: "postgresql://deribit:deribit@db:5432/deribit"
+      DERIBIT_DERIBIT_API_URL: "https://test.deribit.com/api/v2"
+      DERIBIT_FETCH_TICKERS: '["btc_usd","eth_usd"]'
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_USER: deribit
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
